@@ -17,15 +17,34 @@
 6) At least 1 checkbox widget
       -Add multiple movies to a list with a checkbox widget
    
-7) At least 2 of the essential feedback and messages boxes to the users:
+7) At least 2 of the essential feedback and messages boxes to the users: (API Call Success/Fail)
       -Success box   
       -Error box 
 
 8) At least any 5 different widgets chosen from the following:
-      -Selectbox
-      -Multiselect  
-      -Slider 
-      -Text input 
-      -Date input
-      -File uploader  
+      -Selectbox -Each Movies/TV 
+      -Multiselect  - Lists
+      -Slider -Ratings
+      -Text input -Search
+      -Date input -Filtering
+      -File uploader  -Uploading chart
  
+(Pages)
+
+Main Menu:
+      -SideBar: Navigate to other pages
+      -Text Descriptions of features
+Search Page:
+      -Searchbar: text input
+Watchlist Page:
+      -Lists: checkbox widget
+Layout Page:
+      -Trending Charts 
+            -Popular Actors
+            -Movies: Trending, Top Rated, Upcoming, Now Playing (Include Regions Available Map)
+            -Shows: Trending, Top Rated, Upcoming
+Movie Page:
+      -Filter: Details, Name, Rating, Reviews, Similar
+TV Page:
+      -Filter: Details, Name, Rating, Reviews, Similar 
+
