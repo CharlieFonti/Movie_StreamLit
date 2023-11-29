@@ -55,7 +55,7 @@ st.set_page_config(
 
 page = st.sidebar.selectbox(
     "Pick a page",
-    ["Search Page", "Watchlist Page", "Layout Page", "Movie Page", "TV Page"]
+    ["Search Page", "Watchlist Page", "Trending Page"]
 )
 
 if page == "Search Page":
@@ -101,35 +101,9 @@ if page == "Search Page":
 
 elif page == "Watchlist Page":
     st.write("Under Construction")
-elif page == "Layout Page":
+
+elif page == "Trending Page":
     st.write("Under Construction")
 
-elif page == "Movie Page":
-    st.title("Movie Page")
-    # Check if a movie is selected
-    if 'selected_movie_id' in st.session_state:
-        movie_id = st.session_state.selected_movie_id
-        movie_data = get_movie_details(movie_id)
-
-        # Display movie details
-        st.header(movie_data["title"])
-        st.subheader("Description:")
-        st.write(movie_data["overview"])
-
-        st.subheader("Rating:")
-        st.write(movie_data["vote_average"])
-
-        st.subheader("Actors:")
-        credits_url = f"https://api.themoviedb.org/3/movie/{movie_id}/credits"
-        credits_params = {"api_key": api_key}
-        credits_response = requests.get(credits_url, params=credits_params)
-        credits_data = credits_response.json()
-
-        actors = credits_data.get("cast", [])[:5]  # Displaying only the first 5 actors
-        for actor in actors:
-            st.write(f"- {actor['name']}")
-
-elif page == "Tv Page":
-    st.write("Under Construction")
 else:
     st.write("Under Construction")
