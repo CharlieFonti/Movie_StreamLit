@@ -1,6 +1,15 @@
 import streamlit as st
 import requests
 import datetime
+import matplotlib
+matplotlib.use("agg")  # Use the 'agg' backend for Matplotlib
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+
+
+
+
 
 api_key = "14e9eb80a218ca240f9e72fd0bfe2c64"
 
@@ -48,6 +57,21 @@ def display_movie_page(movie_id):
     for actor in actors:
         st.write(f"- {actor['name']}")
 
+# Trending page
+
+def get_popular_movies(api_key, language="en-US", page=1):
+    base_url = "https://api.themoviedb.org/3/movie/popular"
+    params = {"api_key": api_key, "language": language, "page": page}
+    response = requests.get(base_url, params=params)
+    data = response.json()
+    return data.get("results", [])
+
+def get_popular_shows(api_key, language="en-US", page=1):
+    base_url = "https://api.themoviedb.org/3/tv/popular"
+    params = {"api_key": api_key, "language": language, "page": page}
+    response = requests.get(base_url, params=params)
+    data = response.json()
+    return data.get("results", [])
 
 st.set_page_config(
     page_title="BoxOffice"
@@ -98,12 +122,42 @@ if page == "Search Page":
                 st.warning("No movies found.")
         else:
             st.warning("Please enter a search query.")
+            
+   
+
+
 
 elif page == "Watchlist Page":
     st.write("Under Construction")
 
 elif page == "Trending Page":
+    st.title("Trending Page")
     st.write("Under Construction")
+    
+ # Get popular movies and TV shows
+    popular_movies_data = get_popular_movies(api_key)
+    popular_shows_data = get_popular_shows(api_key)
+    
+ # Calculate the width of each column based on the number of items
+col1_width = len(popular_movies_data) / (len(popular_movies_data) + len(popular_shows_data))
+col2_width = 1 - col1_width
 
-else:
-    st.write("Under Construction")
+# Create columns with specified width
+col1, col2 = st.columns((col1_width, col2_width))
+
+# Display popular movies in the first column
+with col1:
+    st.subheader("Popular Movies:")
+    for movie in popular_movies_data:
+        poster_path = movie.get('poster_path', '')
+        if poster_path:
+            st.image(f"https://image.tmdb.org/t/p/w500/{poster_path}", caption=f"{movie.get('title', '')} (Rating: {movie.get('vote_average', '')}/10)", use_column_width=True)
+
+# Display popular TV shows in the second column
+with col2:
+    st.subheader("Popular TV Shows:")
+    for show in popular_shows_data:
+        poster_path = show.get('poster_path', '')
+        title = show.get('name', 'Title not available')  # Adjust 'title' to 'name' if that's the correct key
+        if poster_path:
+            st.image(f"https://image.tmdb.org/t/p/w500/{poster_path}", caption=f"{title} (Rating: {show.get('vote_average', '')}/10)", use_column_width=True)
