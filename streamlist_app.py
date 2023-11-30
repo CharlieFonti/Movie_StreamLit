@@ -2,7 +2,7 @@ import streamlit as st
 import requests
 import datetime
 import matplotlib
-matplotlib.use("agg")  # Use the 'agg' backend for Matplotlib
+matplotlib.use("agg") 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
