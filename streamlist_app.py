@@ -1,64 +1,16 @@
 import streamlit as st
 import requests
-import matplotlib.pyplot
 # (goes unused)
-
+# import matplotlib.pyplot
 # import datetime
 # import numpy as np
 # import pandas as pd
 # import datetime
+# noinspection PyShadowingNames
 
 api_key = "14e9eb80a218ca240f9e72fd0bfe2c64"
 
 
-def search_movies(query):
-    base_url = "https://api.themoviedb.org/3/search/movie"
-    params = {"api_key": api_key, "query": query}
-
-    response = requests.get(base_url, params=params)
-    data = response.json()
-
-    return data.get("results", [])
-
-
-# noinspection PyShadowingNames
-def get_movie_details(movie_id):
-    base_url = f"https://api.themoviedb.org/3/movie/{movie_id}"
-    params = {"api_key": api_key}
-
-    response = requests.get(base_url, params=params)
-    data = response.json()
-
-    return data
-
-
-# noinspection PyShadowingNames
-def display_movie_page(movie_id):
-    movie_data = get_movie_details(movie_id)
-
-    # Display movie details
-    st.header(movie_data["title"])
-    st.subheader("Description:")
-    st.write(movie_data["overview"])
-
-    st.subheader("Rating:")
-    st.write(movie_data["vote_average"])
-
-    st.subheader("Actors:")
-    credits_url = f"https://api.themoviedb.org/3/movie/{movie_id}/credits"
-    credits_params = {"api_key": api_key}
-    credits_response = requests.get(credits_url, params=credits_params)
-    credits_data = credits_response.json()
-
-    actors = credits_data.get("cast", [])[:5]  # Displaying only the first 5 actors
-    for actor in actors:
-        st.write(f"- {actor['name']}")
-
-
-matplotlib.use("agg")  # Use the 'agg' backend for Matplotlib
-
-
-# Function to search for movies and TV shows using an API
 def search_media(query):
     # Search for movies
     movie_base_url = "https://api.themoviedb.org/3/search/movie"
@@ -78,7 +30,6 @@ def search_media(query):
     return media_data
 
 
-# Function to get media details by ID (handles both movies and TV shows)
 def get_media_details(media_id, media_type):
     # Determine the base URL based on media type
     base_url = f"https://api.themoviedb.org/3/{media_type}/{media_id}"
@@ -120,42 +71,49 @@ if page == "Search Page":
     st.title("Search Page")
 
     # Search bar
-    search_query = st.text_input("Search for a movie:")
-    if st.button("Search"):
-        if search_query:
-            movies = search_movies(search_query)
-            if movies:
-                st.success(f"Found {len(movies)} movies:")
-                selected_movie = st.selectbox("Select a movie", [movie['title'] for movie in movies])
+    search_query = st.text_input("Search for a movie or TV show:")
 
-                for movie in movies:
-                    if selected_movie == movie['title']:
-                        # Display movie details
-                        st.header(movie["title"])
-                        st.subheader("Description:")
-                        st.write(movie["overview"])
+    # Search media based on user input
+    media_results = search_media(search_query)
 
-                        poster_path = movie.get("poster_path")
-                        if poster_path:
-                            poster_url = f"https://image.tmdb.org/t/p/w500/{poster_path}"
-                            st.image(poster_url, caption=movie["title"], use_column_width=True)
+    if media_results:
+        # Display media options in a selectbox
+        selected_media = st.selectbox("Select a media",
+                                      [item.get("title", item.get("name", "")) for item in media_results])
 
-                        st.subheader("Rating:")
-                        st.write(movie["vote_average"])
+        for media_item in media_results:
+            if selected_media == media_item.get("title", media_item.get("name", "")):
+                media_id = media_item["id"]
+                media_type = "movie" if "title" in media_item else "tv"
 
-                        st.subheader("Actors:")
-                        credits_url = f"https://api.themoviedb.org/3/movie/{movie['id']}/credits"
-                        credits_params = {"api_key": api_key}
-                        credits_response = requests.get(credits_url, params=credits_params)
-                        credits_data = credits_response.json()
+                # Display media details
+                st.header(media_item.get("title", media_item.get("name", "")))
 
-                        actors = credits_data.get("cast", [])[:5]  # Displaying only the first 5 actors
-                        for actor in actors:
-                            st.write(f"- {actor['name']}")
-            else:
-                st.warning("No movies found.")
-        else:
-            st.warning("Please enter a search query.")
+                # Display media poster
+                poster_path = media_item.get("poster_path")
+                if poster_path:
+                    poster_url = f"https://image.tmdb.org/t/p/w500/{poster_path}"
+                    st.image(poster_url, caption=media_item.get("title", media_item.get("name", "")),
+                             use_column_width=True)
+
+                st.subheader("Description:")
+                st.write(media_item.get("overview", ""))
+
+                st.subheader("Rating:")
+                st.write(media_item.get("vote_average", ""))
+
+                st.subheader("Actors:" if media_type == "movie" else "Main Cast:")
+                credits_url = f"https://api.themoviedb.org/3/{media_type}/{media_id}/credits"
+                credits_params = {"api_key": api_key}
+                credits_response = requests.get(credits_url, params=credits_params)
+                credits_data = credits_response.json()
+
+                cast = credits_data.get("cast", [])[:5]  # Displaying only the first 5 actors/cast members
+                for actor in cast:
+                    st.write(f"- {actor['name']}")
+
+    else:
+        st.warning("No results found.")
 
 elif page == "Watchlist Page":
     st.write("Under Construction")
