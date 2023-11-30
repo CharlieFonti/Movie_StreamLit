@@ -130,34 +130,40 @@ if page == "Search Page":
 elif page == "Watchlist Page":
     st.write("Under Construction")
 
+
 elif page == "Trending Page":
-    st.title("Trending Page")
-    st.write("Under Construction")
+    st.title("Trending Movies and Tv Shows")
+   
+        
     
- # Get popular movies and TV shows
-    popular_movies_data = get_popular_movies(api_key)
-    popular_shows_data = get_popular_shows(api_key)
-    
+    # Get popular movies and TV shows
+    popular_movies_data = get_popular_movies(api_key)[:5]  # Limit to 5 movies
+    popular_shows_data = get_popular_shows(api_key)[:5]  # Limit to 5 shows
+
+    # Calculate the width of each column based on the number of items
+    col1_width = 0.5
+    col2_width = 0.5
+        
  # Calculate the width of each column based on the number of items
-col1_width = len(popular_movies_data) / (len(popular_movies_data) + len(popular_shows_data))
-col2_width = 1 - col1_width
+# col1_width = len(popular_movies_data) / (len(popular_movies_data) + len(popular_shows_data))
+# col2_width = 1 - col1_width
 
 # Create columns with specified width
-col1, col2 = st.columns((col1_width, col2_width))
+    col1, col2 = st.columns((col1_width, col2_width))
 
 # Display popular movies in the first column
-with col1:
-    st.subheader("Popular Movies:")
-    for movie in popular_movies_data:
-        poster_path = movie.get('poster_path', '')
-        if poster_path:
-            st.image(f"https://image.tmdb.org/t/p/w500/{poster_path}", caption=f"{movie.get('title', '')} (Rating: {movie.get('vote_average', '')}/10)", use_column_width=True)
+    with col1:
+        st.subheader("Popular Movies:")
+        for movie in popular_movies_data:
+            poster_path = movie.get('poster_path', '')
+            if poster_path:
+                st.image(f"https://image.tmdb.org/t/p/w500/{poster_path}", caption=f"{movie.get('title', '')} (Rating: {movie.get('vote_average', '')}/10)", use_column_width=True)
 
-# Display popular TV shows in the second column
-with col2:
-    st.subheader("Popular TV Shows:")
-    for show in popular_shows_data:
-        poster_path = show.get('poster_path', '')
-        title = show.get('name', 'Title not available')  # Adjust 'title' to 'name' if that's the correct key
-        if poster_path:
-            st.image(f"https://image.tmdb.org/t/p/w500/{poster_path}", caption=f"{title} (Rating: {show.get('vote_average', '')}/10)", use_column_width=True)
+    # Display popular TV shows in the second column
+    with col2:
+        st.subheader("Popular TV Shows:")
+        for show in popular_shows_data:
+            poster_path = show.get('poster_path', '')
+            title = show.get('name', 'Title not available')  # Adjust 'title' to 'name' if that's the correct key
+            if poster_path:
+                st.image(f"https://image.tmdb.org/t/p/w500/{poster_path}", caption=f"{title} (Rating: {show.get('vote_average', '')}/10)", use_column_width=True)
