@@ -64,7 +64,7 @@ st.set_page_config(
 
 page = st.sidebar.selectbox(
     "Pick a page",
-    ["Search Page", "Watchlist Page", "Trending Page"]
+    [ "Trending Page", "Watchlist Page", "Search Page"]
 )
 
 if page == "Search Page":
@@ -116,7 +116,24 @@ if page == "Search Page":
         st.warning("No results found.")
 
 elif page == "Watchlist Page":
-    st.write("Under Construction")
+    st.header("The Watchlist Page (Please change this horrible title)")
+    st.subheader("About")
+    st.write("Here you can find information on your current watchlists")
+
+    st.subheader("Step One: Sign in:")
+    # TODO: Check out making a guest session (https://developer.themoviedb.org/reference/authentication-create-guest-session)
+
+    # TODO: Make the below appear once the guest session is made
+    st.subheader("Pick a list!")
+    TV_Watchlist = st.checkbox("TV Watchlist Information")
+    if TV_Watchlist:
+        url = f"https://api.themoviedb.org/3/account/{account_id}/watchlist/tv"
+        st.write("test!")
+
+    Movie_Watchlist = st.checkbox("Movie Watchlist Information")
+    if Movie_Watchlist:
+        url = f"https://api.themoviedb.org/3/account/{account_id}/watchlist/movies"
+        st.write("test!")
 
 elif page == "Trending Page":
     st.title("Trending Page")
