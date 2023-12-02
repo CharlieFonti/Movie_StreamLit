@@ -122,18 +122,60 @@ elif page == "Watchlist Page":
 
     st.subheader("Step One: Sign in:")
     # TODO: Check out making a guest session (https://developer.themoviedb.org/reference/authentication-create-guest-session)
+    if st.button("Click here to make a guest account!", type="primary"):
+        url = "https://api.themoviedb.org/3/authentication/guest_session/new"
 
-    # TODO: Make the below appear once the guest session is made
-    st.subheader("Pick a list!")
-    TV_Watchlist = st.checkbox("TV Watchlist Information")
-    if TV_Watchlist:
-        url = f"https://api.themoviedb.org/3/account/{account_id}/watchlist/tv"
-        st.write("test!")
+        params = {
+            "api_key": api_key
+        }
 
-    Movie_Watchlist = st.checkbox("Movie Watchlist Information")
-    if Movie_Watchlist:
-        url = f"https://api.themoviedb.org/3/account/{account_id}/watchlist/movies"
-        st.write("test!")
+        response = requests.get(url, params=params)
+        data = response.json()
+
+        if (data["success"]):
+            st.success("Temp user successfully made!")
+            sessionID = data["guest_session_id"]
+
+            st.subheader("Step Two: Add TV/Movies to your watchlists!")
+            url =f"https://api.themoviedb.org/3/account/{sessionID}/watchlist"
+            search_input = st.text_input("Search for a TV show or movie:")
+            if search_input:
+                search_results = search_media(search_input)
+                # Search bar
+            search_query = st.text_input("Search for a movie or TV show:")
+
+            # Search media based on user input
+            media_results = search_media(search_query)
+
+            if media_results:
+                # Display media options in a selectbox
+                selected_media = st.selectbox("Select a media",
+                                              [item.get("title", item.get("name", "")) for item in media_results])
+
+                for media_item in media_results:
+                    if selected_media == media_item.get("title", media_item.get("name", "")):
+                        media_id = media_item["id"]
+                        media_type = "movie" if "title" in media_item else "tv"
+
+            st.subheader("Step Three: Pick a list to view!")
+            TV_Watchlist = st.checkbox("TV Watchlist Information")
+            if TV_Watchlist:
+                url = f"https://api.themoviedb.org/3/account/{sessionID}/watchlist/tv"
+                st.write("test!")
+
+            Movie_Watchlist = st.checkbox("Movie Watchlist Information")
+            if Movie_Watchlist:
+                url = f"https://api.themoviedb.org/3/account/{sessionID}/watchlist/movies"
+                st.write("test!")
+
+        else:
+            st.warning ("Fail, try reloading the page")
+
+    else:
+        st.info ("Click the button above to make a temp account")
+
+
+
 
 elif page == "Trending Page":
     st.title("Trending Page")
