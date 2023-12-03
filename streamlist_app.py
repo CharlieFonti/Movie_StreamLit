@@ -58,6 +58,7 @@ def get_popular_shows(api_key, language="en-US", page=1):
     return data.get("results", [])
 
 
+
 st.set_page_config(
     page_title="BoxOffice"
 )
@@ -116,77 +117,71 @@ if page == "Search Page":
         st.warning("No results found.")
 
 elif page == "Watchlist Page":
+    # Streamlit App
     st.header("The Watchlist Page (Please change this horrible title)")
     st.subheader("About")
     st.write("Here you can find information on your current watchlists")
 
     st.subheader("Step One: Sign in:")
-    # TODO: Check out making a guest session (https://developer.themoviedb.org/reference/authentication-create-guest-session)
-    if st.button("Click here to make a guest account!", type="primary"):
-        url = "https://api.themoviedb.org/3/authentication/guest_session/new"
 
-        params = {
-            "api_key": api_key
-        }
+    # Check if a session already exists
+    if 'sessionID' not in st.session_state:
+        if st.button("Click here to make a guest account!", type="primary"):
+            url = "https://api.themoviedb.org/3/authentication/guest_session/new"
+            params = {"api_key": api_key}
+            response = requests.get(url, params=params)
+            data = response.json()
 
-        response = requests.get(url, params=params)
-        data = response.json()
-
-        if (data["success"]):
-            st.success("Temp user successfully made!")
-            sessionID = data["guest_session_id"]
-
-            st.subheader("Step Two: Add TV/Movies to your watchlists!")
-            search_input = st.text_input("Search for a TV show or movie:")
-            if search_input:
-                search_results = search_media(search_input)
-
-
-                if search_results:
-                    selected_media = st.selectbox("Select a media", [item.get("title", item.get("name", "")) for item in search_results])
-
-                    for media_item in search_results:
-                        if selected_media == media_item.get("title", media_item.get("name", "")):
-                            media_id = media_item["id"]
-                            media_type = "movie" if "title" in media_item else "tv"
-
-
-                            add_to_watchlist = st.button("Add to Watchlist")
-                            if add_to_watchlist:
-
-                                url = f"https://api.themoviedb.org/3/account/{sessionID}/watchlist"
-                                payload = {
-                                    "api_key": api_key,
-                                    "media_type": media_type,
-                                    "media_id": media_id,
-                                    "watchlist": True
-                                }
-
-                                response = requests.post(url, params=payload)
-
-                                if response.status_code == 201:
-                                    st.success(f"{selected_media} added to your watchlist!")
-                                else:
-                                    st.error(f"Failed to add {selected_media} to watchlist. Please try again.")
-
-            st.subheader("Step Three: Pick a list to view!")
-            TV_Watchlist = st.checkbox("TV Watchlist Information")
-            if TV_Watchlist:
-                url = f"https://api.themoviedb.org/3/account/{sessionID}/watchlist/tv"
-                st.write("test!")
-
-            Movie_Watchlist = st.checkbox("Movie Watchlist Information")
-            if Movie_Watchlist:
-                url = f"https://api.themoviedb.org/3/account/{sessionID}/watchlist/movies"
-                st.write("test!")
-
-        else:
-            st.warning ("Fail, try reloading the page")
-
+            if data.get("success"):
+                st.success("Temp user successfully made!")
+                st.session_state['sessionID'] = data["guest_session_id"]
+            else:
+                st.warning("Fail, try reloading the page")
     else:
-        st.info ("Click the button above to make a temp account")
+        st.success("You are already logged in as a guest.")
 
+    # Proceed with the rest of the app if a session exists
+    if 'sessionID' in st.session_state:
+        st.subheader("Step Two: Add TV/Movies to your watchlists!")
+        search_input = st.text_input("Search for a TV show or movie:")
+        search_button = st.button("Search")
 
+        if search_button and search_input:
+            search_results = search_media(search_input)
+
+            # Debugging: Print search results to check
+            st.write("Search Results:", search_results)
+
+            # Display search results
+            if search_results:
+                selected_media = st.selectbox(
+                    "Select a media",
+                    [item.get("title", item.get("name", "")) for item in search_results],
+                )
+
+                for media_item in search_results:
+                    if selected_media == media_item.get("title", media_item.get("name", "")):
+                        media_id = media_item["id"]
+                        media_type = "movie" if "title" in media_item else "tv"
+
+                        add_to_watchlist = st.button("Add to Watchlist")
+                        if add_to_watchlist:
+                            url = f"https://api.themoviedb.org/3/account/{st.session_state['sessionID']}/watchlist"
+                            payload = {
+                                "api_key": api_key,
+                                "media_type": media_type,
+                                "media_id": media_id,
+                                "watchlist": True,
+                            }
+
+                            response = requests.post(url, params=payload)
+
+                            if response.status_code == 201:
+                                st.success(f"{selected_media} added to your watchlist!")
+                            else:
+                                st.error(f"Failed to add {selected_media} to watchlist. Please try again.")
+
+        # Rest of the code for viewing watchlists
 
 
 elif page == "Trending Page":
