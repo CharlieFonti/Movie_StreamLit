@@ -141,21 +141,34 @@ elif page == "Watchlist Page":
             search_input = st.text_input("Search for a TV show or movie:")
             if search_input:
                 search_results = search_media(search_input)
-                # Search bar
-            search_query = st.text_input("Search for a movie or TV show:")
 
-            # Search media based on user input
-            media_results = search_media(search_query)
 
-            if media_results:
-                # Display media options in a selectbox
-                selected_media = st.selectbox("Select a media",
-                                              [item.get("title", item.get("name", "")) for item in media_results])
+                if search_results:
+                    selected_media = st.selectbox("Select a media", [item.get("title", item.get("name", "")) for item in search_results])
 
-                for media_item in media_results:
-                    if selected_media == media_item.get("title", media_item.get("name", "")):
-                        media_id = media_item["id"]
-                        media_type = "movie" if "title" in media_item else "tv"
+                    for media_item in search_results:
+                        if selected_media == media_item.get("title", media_item.get("name", "")):
+                            media_id = media_item["id"]
+                            media_type = "movie" if "title" in media_item else "tv"
+
+
+                            add_to_watchlist = st.button("Add to Watchlist")
+                            if add_to_watchlist:
+
+                                url = f"https://api.themoviedb.org/3/account/{sessionID}/watchlist"
+                                payload = {
+                                    "api_key": api_key,
+                                    "media_type": media_type,
+                                    "media_id": media_id,
+                                    "watchlist": True
+                                }
+
+                                response = requests.post(url, params=payload)
+
+                                if response.status_code == 201:
+                                    st.success(f"{selected_media} added to your watchlist!")
+                                else:
+                                    st.error(f"Failed to add {selected_media} to watchlist. Please try again.")
 
             st.subheader("Step Three: Pick a list to view!")
             TV_Watchlist = st.checkbox("TV Watchlist Information")
