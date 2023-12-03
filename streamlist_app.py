@@ -137,7 +137,6 @@ elif page == "Watchlist Page":
             sessionID = data["guest_session_id"]
 
             st.subheader("Step Two: Add TV/Movies to your watchlists!")
-            url =f"https://api.themoviedb.org/3/account/{sessionID}/watchlist"
             search_input = st.text_input("Search for a TV show or movie:")
             if search_input:
                 search_results = search_media(search_input)
