@@ -64,8 +64,9 @@ st.set_page_config(
 
 page = st.sidebar.selectbox(
     "Pick a page",
-    ["Search Page", "Watchlist Page", "Trending Page"]
+    ["Trending Page", "Watchlist Page", "Search Page"]
 )
+
 
 if page == "Search Page":
     st.title("Search Page")
@@ -116,7 +117,79 @@ if page == "Search Page":
         st.warning("No results found.")
 
 elif page == "Watchlist Page":
-    st.write("Under Construction")
+
+    # Streamlit App
+    st.header("The Watchlist Page (Please change this horrible title)")
+    st.subheader("About")
+    st.write("Here you can find information on your current watchlists")
+    if 'watchlist_status' not in st.session_state:
+        st.session_state['watchlist_status'] = None
+    st.subheader("Step One: Sign in:")
+
+    # Check if a session already exists
+    if 'sessionID' not in st.session_state:
+        if st.button("Click here to make a guest account!", type="primary"):
+            url = "https://api.themoviedb.org/3/authentication/guest_session/new"
+            params = {"api_key": api_key}
+            response = requests.get(url, params=params)
+            data = response.json()
+
+            if data.get("success"):
+                st.success("Temp user successfully made!")
+                st.session_state['sessionID'] = data["guest_session_id"]
+            else:
+                st.warning("Fail, try reloading the page")
+    else:
+        st.success("You are already logged in as a guest.")
+
+    # Proceed with the rest of the app if a session exists
+    if 'sessionID' in st.session_state:
+        st.subheader("Step Two: Add TV/Movies to your watchlists!")
+
+        # Using st.form to handle the form submission
+        with st.form("add_to_watchlist_form"):
+            search_input = st.text_input("Search for a TV show or movie:")
+            search_results = search_media(search_input)
+
+            # Display search results as a dropdown
+            if search_results:
+                selected_media = st.selectbox(
+                    "Select a media",
+                    [item.get("title", item.get("name", "")) for item in search_results],
+                )
+
+                for media_item in search_results:
+                    if selected_media == media_item.get("title", media_item.get("name", "")):
+                        media_id = media_item["id"]
+                        media_type = "movie" if "title" in media_item else "tv"
+
+                        # Using a separate button for watchlist addition
+                        add_to_watchlist = st.form_submit_button("Add to Watchlist")
+
+                        if add_to_watchlist:
+                            url = f"https://api.themoviedb.org/3/account/{st.session_state['sessionID']}/watchlist"
+                            payload = {
+                                "api_key": api_key,
+                                "media_type": media_type,
+                                "media_id": media_id,
+                                "watchlist": True,
+                            }
+                            response = requests.post(url, params=payload)
+
+                            if response.status_code == 201:
+                                st.session_state['watchlist_status'] = f"Successfully added {selected_media} to your watchlist!"
+                            else:
+                                st.session_state['watchlist_status'] = f"Failed to add {selected_media} to watchlist. Please try again."
+
+            # Display the watchlist status message
+            if st.session_state['watchlist_status']:
+                st.success(st.session_state['watchlist_status'])
+                # Reset the status message so it doesn't show again on page refresh
+                st.session_state['watchlist_status'] = None
+
+        # Rest of the code for viewing watchlists
+
+
 
 elif page == "Trending Page":
     st.title("Trending Page")
